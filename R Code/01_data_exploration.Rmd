@@ -1,0 +1,175 @@
+---
+title: "01_data_exploration"
+author: "Diabb Zegpi"
+date: "15-02-2022"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+library(here)
+
+bacteria <- read_csv(here("Data", "train.csv"))
+bacteria_test <- read_csv(here("Data", "test.csv"))
+```
+
+```{r}
+bacteria %>% count(target, sort = TRUE)
+```
+
+There are 10 targets in total in a well balanced manner. Lets calculate a benchmark accuracy.
+
+```{r}
+set.seed(111)
+benchmark_sample <- sample(unique(bacteria$target), 
+                           size = 2e5, 
+                           replace = TRUE)
+
+mean(bacteria$target == benchmark_sample)
+```
+
+A priori, the benchmark accuracy is approximately 10%. 
+
+## Preprocessing with normalize, filter with correlations and apply PCA
+
+```{r}
+library(tidymodels)
+set.seed(112)
+splits <- initial_split(bacteria)
+bacteria_train <- training(splits)
+bacteria_test <- testing(splits)
+
+set.seed(113)
+folds <- vfold_cv(bacteria_train)
+
+preprocessing <- recipe(target ~ ., data = bacteria_train) %>% 
+  update_role(row_id, new_role = "id") %>% 
+  step_zv(all_numeric_predictors()) %>% 
+  step_normalize(all_numeric_predictors()) %>% 
+  step_corr(all_numeric_predictors()) %>% 
+  step_pca(all_numeric_predictors())
+```
+
+## Model specs
+
+```{r}
+library(treesnip)
+
+svm_spec <- svm_poly(degree = 2) %>% 
+  set_mode("classification") %>% 
+  set_engine("kernlab")
+
+nnet_spec <- multinom_reg(penalty = .001, mixture = 1) %>% 
+  set_mode("classification") %>% 
+  set_engine("nnet")
+
+knn_spec <- nearest_neighbor(neighbors = 10) %>% 
+  set_mode("classification") %>% 
+  set_engine("kknn")
+
+rf_spec <- rand_forest(trees = 1000) %>% 
+  set_mode("classification") %>% 
+  set_engine("ranger")
+
+gbm_spec <- boost_tree(trees = 1000) %>% 
+  set_mode("classification") %>% 
+  set_engine("lightgbm")
+```
+
+## Workflows
+
+```{r}
+svm_wf <- workflow() %>% 
+  add_recipe(preprocessing) %>% 
+  add_model(svm_spec)
+
+nnet_wf <- workflow() %>% 
+  add_recipe(preprocessing) %>% 
+  add_model(nnet_spec)
+
+knn_wf <- workflow() %>% 
+  add_recipe(preprocessing) %>% 
+  add_model(knn_spec)
+
+rf_wf <- workflow() %>% 
+  add_recipe(preprocessing) %>% 
+  add_model(rf_spec)
+
+gbm_wf <- workflow() %>% 
+  add_recipe(preprocessing) %>% 
+  add_model(gbm_spec)
+```
+
+
+## Fit resamples
+
+
+```{r}
+library(doParallel)
+cores <- parallel::detectCores() - 1
+registerDoParallel(cores = all_cores)
+
+svm_res <- fit_resamples(
+  svm_wf, 
+  resamples = folds, 
+  metrics = metric_set(accuracy)
+)
+
+```
+
+
+```{r}
+library(workflowsets)
+
+models <- workflow_set(
+  preproc = list(preprocessing),
+  models = list(svm = svm_spec, neural_net = nnet_spec,
+                knn = knn_spec, random_forest = rf_spec,
+                lightgbm = gbm_spec),
+  cross = TRUE
+)
+```
+
+```{r}
+library(doParallel)
+cores <- parallel::detectCores() - 1
+registerDoParallel(cores = all_cores)
+
+t0 <- Sys.time()
+set.seed(114)
+models_fitted <- workflow_map(
+  models, 
+  fun = "fit_resamples",
+  verbose = TRUE,
+  metrics = metric_set(accuracy)
+)
+t1 <- Sys.time()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
