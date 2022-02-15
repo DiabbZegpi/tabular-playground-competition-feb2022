@@ -12,7 +12,7 @@ library(tidyverse)
 library(here)
 
 bacteria <- read_csv(here("Data", "train.csv"))
-bacteria_test <- read_csv(here("Data", "test.csv"))
+# bacteria_test <- read_csv(here("Data", "test.csv"))
 ```
 
 ```{r}
@@ -107,9 +107,10 @@ gbm_wf <- workflow() %>%
 
 
 ```{r}
-library(doParallel)
-cores <- parallel::detectCores() - 1
-registerDoParallel(cores = all_cores)
+# library(doParallel)
+# cores <- parallel::detectCores() - 1
+# cl <- makePSOCKcluster(cores)
+# registerDoParallel(cl)
 
 svm_res <- fit_resamples(
   svm_wf, 
@@ -119,6 +120,7 @@ svm_res <- fit_resamples(
 
 ```
 
+Workflow sets don't work because backend processors issues.
 
 ```{r}
 library(workflowsets)
@@ -142,6 +144,7 @@ set.seed(114)
 models_fitted <- workflow_map(
   models, 
   fun = "fit_resamples",
+  resamples = folds,
   verbose = TRUE,
   metrics = metric_set(accuracy)
 )
