@@ -112,13 +112,23 @@ gbm_wf <- workflow() %>%
 # cl <- makePSOCKcluster(cores)
 # registerDoParallel(cl)
 
-svm_res <- fit_resamples(
-  svm_wf, 
-  resamples = folds, 
-  metrics = metric_set(accuracy)
-)
+# SVM accuracy = 0.737
+# svm_res <- fit_resamples(
+#   svm_wf, 
+#   resamples = folds, 
+#   metrics = metric_set(accuracy),
+#   control = control_resamples(verbose = TRUE)
+# )
 
+nnet_res <- fit_resamples(
+  nnet_wf,
+  resamples = folds,
+  metrics = metric_set(accuracy),
+  control = control_resamples(verbose = TRUE)
+)
 ```
+
+
 
 Workflow sets don't work because backend processors issues.
 
