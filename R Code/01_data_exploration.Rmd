@@ -120,8 +120,17 @@ gbm_wf <- workflow() %>%
 #   control = control_resamples(verbose = TRUE)
 # )
 
-nnet_res <- fit_resamples(
-  nnet_wf,
+# NNET accuracy = 0.669
+# nnet_res <- fit_resamples(
+#   nnet_wf,
+#   resamples = folds,
+#   metrics = metric_set(accuracy),
+#   control = control_resamples(verbose = TRUE)
+# )
+
+# KNN accuracy
+knn_res <- fit_resamples(
+  knn_wf,
   resamples = folds,
   metrics = metric_set(accuracy),
   control = control_resamples(verbose = TRUE)
