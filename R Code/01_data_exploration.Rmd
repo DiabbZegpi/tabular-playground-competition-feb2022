@@ -129,12 +129,20 @@ gbm_wf <- workflow() %>%
 # )
 
 # KNN accuracy = 0.924
-knn_res <- fit_resamples(
-  knn_wf,
-  resamples = folds,
-  metrics = metric_set(accuracy),
-  control = control_resamples(verbose = TRUE)
-)
+# knn_res <- fit_resamples(
+#   knn_wf,
+#   resamples = folds,
+#   metrics = metric_set(accuracy),
+#   control = control_resamples(verbose = TRUE)
+# )
+
+# Random Forest accuracy = 0.975
+# rf_res <- fit_resamples(
+#   rf_wf,
+#   resamples = folds,
+#   metrics = metric_set(accuracy),
+#   control = control_resamples(verbose = TRUE)
+# )
 ```
 
 
