@@ -75,7 +75,7 @@ rf_spec <- rand_forest(trees = 1000) %>%
 
 gbm_spec <- boost_tree(trees = 1000) %>% 
   set_mode("classification") %>% 
-  set_engine("lightgbm")
+  set_engine("xgboost")
 ```
 
 ## Workflows
@@ -143,6 +143,14 @@ gbm_wf <- workflow() %>%
 #   metrics = metric_set(accuracy),
 #   control = control_resamples(verbose = TRUE)
 # )
+
+# XGBoost accuracy = 0.
+gbm_res <- fit_resamples(
+  gbm_wf,
+  resamples = folds,
+  metrics = metric_set(accuracy),
+  control = control_resamples(verbose = TRUE)
+)
 ```
 
 
