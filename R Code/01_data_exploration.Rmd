@@ -128,7 +128,7 @@ gbm_wf <- workflow() %>%
 #   control = control_resamples(verbose = TRUE)
 # )
 
-# KNN accuracy
+# KNN accuracy = 0.924
 knn_res <- fit_resamples(
   knn_wf,
   resamples = folds,
