@@ -55,8 +55,6 @@ preprocessing <- recipe(target ~ ., data = bacteria_train) %>%
 ## Model specs
 
 ```{r}
-library(treesnip)
-
 svm_spec <- svm_poly(degree = 2) %>% 
   set_mode("classification") %>% 
   set_engine("kernlab")
@@ -73,7 +71,7 @@ rf_spec <- rand_forest(trees = 1000) %>%
   set_mode("classification") %>% 
   set_engine("ranger")
 
-gbm_spec <- boost_tree(trees = 1000) %>% 
+xgb_spec <- boost_tree(trees = 1000) %>% 
   set_mode("classification") %>% 
   set_engine("xgboost")
 ```
@@ -97,9 +95,9 @@ rf_wf <- workflow() %>%
   add_recipe(preprocessing) %>% 
   add_model(rf_spec)
 
-gbm_wf <- workflow() %>% 
+xgb_wf <- workflow() %>% 
   add_recipe(preprocessing) %>% 
-  add_model(gbm_spec)
+  add_model(xgb_spec)
 ```
 
 
@@ -144,13 +142,13 @@ gbm_wf <- workflow() %>%
 #   control = control_resamples(verbose = TRUE)
 # )
 
-# XGBoost accuracy = 0.
-gbm_res <- fit_resamples(
-  gbm_wf,
-  resamples = folds,
-  metrics = metric_set(accuracy),
-  control = control_resamples(verbose = TRUE)
-)
+# XGBoost accuracy = 0.976
+# gbm_res <- fit_resamples(
+#   xgb_wf,
+#   resamples = folds,
+#   metrics = metric_set(accuracy),
+#   control = control_resamples(verbose = TRUE)
+# )
 ```
 
 
