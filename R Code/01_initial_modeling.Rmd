@@ -181,17 +181,38 @@ stopImplicitCluster()
 ```
 
 ```{r}
-train_predictions <- tibble(
-  rf_preds = predict(rf_fit, new_data = bacteria_train) 
-) %>%
-  bind_cols(
-    xgb_preds = predict(xgb_fit, new_data = bacteria_train)
-  ) %>% 
-  bind_cols(target = bacteria_train$target)
+library(butcher)
+rf_butcher <- butcher(rf_fit)
+
 ```
 
+## Save initial models        
+
 ```{r}
-train_predictions
+saveRDS(rf_fit, here("Models", "01_random_forest_initial.rds"))
+saveRDS(xgb_fit, here("Models", "01_xgboost_initial.rds"))
+```
+
+## Training predictions
+
+```{r}
+test_submission <- read_csv(here("Data", "test.csv"))
+
+# XGBoost
+submission <- test_submission %>%
+  select(row_id) %>% 
+  bind_cols(predict(xgb_fit, new_data = test_submission)) %>% 
+  rename(target = .pred_class)
+
+# Random Forest
+submission2 <- test_submission %>%
+  select(row_id) %>% 
+  bind_cols(predict(rf_fit, new_data = test_submission)) %>% 
+  rename(target = .pred_class)
+
+
+write_csv(submission, here("Submissions", "01_initial_xgboost"))
+write_csv(submission2, here("Submissions", "02_initial_randomforest"))
 ```
 
 
