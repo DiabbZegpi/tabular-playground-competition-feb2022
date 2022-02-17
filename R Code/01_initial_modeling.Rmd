@@ -152,43 +152,7 @@ xgb_wf <- workflow() %>%
 ```
 
 
-
-Workflow sets don't work because backend processors issues.
-
-```{r}
-library(workflowsets)
-
-models <- workflow_set(
-  preproc = list(preprocessing),
-  models = list(svm = svm_spec, neural_net = nnet_spec,
-                knn = knn_spec, random_forest = rf_spec,
-                lightgbm = gbm_spec),
-  cross = TRUE
-)
-```
-
-```{r}
-library(doParallel)
-cores <- parallel::detectCores() - 1
-registerDoParallel(cores = all_cores)
-
-t0 <- Sys.time()
-set.seed(114)
-models_fitted <- workflow_map(
-  models, 
-  fun = "fit_resamples",
-  resamples = folds,
-  verbose = TRUE,
-  metrics = metric_set(accuracy)
-)
-t1 <- Sys.time()
-```
-
-
-
-
-
-
+The two best models are: random forest and XGBoost, both with 1000 trees. The next step is make an initial submission with models trained in whole dataset. Then, hyperparameter tuning baby!
 
 
 
