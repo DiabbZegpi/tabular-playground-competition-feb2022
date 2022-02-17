@@ -154,9 +154,45 @@ xgb_wf <- workflow() %>%
 
 The two best models are: random forest and XGBoost, both with 1000 trees. The next step is make an initial submission with models trained in whole dataset. Then, hyperparameter tuning baby!
 
+## Training in the whole dataset
 
+```{r}
+library(doParallel)
 
+cores <- detectCores() - 1
+cluster <- makeCluster(cores)
+registerDoParallel(cluster)
 
+t0 <- Sys.time()
+rf_fit <- fit(rf_wf, data = bacteria_train)
+t1 <- Sys.time()
+beepr::beep(4)
+stopImplicitCluster()
+```
+
+```{r}
+registerDoParallel(cluster)
+
+t0 <- Sys.time()
+xgb_fit <- fit(xgb_wf, data = bacteria_train)
+t1 <- Sys.time()
+beepr::beep(4)
+stopImplicitCluster()
+```
+
+```{r}
+train_predictions <- tibble(
+  rf_preds = predict(rf_fit, new_data = bacteria_train) 
+) %>%
+  bind_cols(
+    xgb_preds = predict(xgb_fit, new_data = bacteria_train)
+  ) %>% 
+  bind_cols(target = bacteria_train$target)
+```
+
+```{r}
+train_predictions
+```
 
 
 
